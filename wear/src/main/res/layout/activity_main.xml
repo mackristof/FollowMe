@@ -6,21 +6,43 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="org.mackristof.followme.MainActivity"
+    android:theme="@style/Theme.Wearable"
     tools:deviceIds="wear">
-
-    <TextView
-        android:id="@+id/text"
+    <GridLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_box="all"
-        android:background="#935b5b" />
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/clock"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|start"
-        android:textColor="@android:color/white"
-        app:layout_box="all" />
+        <Button
+            android:id="@+id/startButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/start_locate_me"/>
+
+        <Button
+            android:id="@+id/stopButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/stop_locate_me" />
+
+
+        <TextView
+            android:id="@+id/text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_box="all"
+            android:background="#935b5b"
+            android:layout_gravity="top|end" />
+
+        <TextView
+            android:id="@+id/clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|start"
+            android:textColor="@android:color/white"
+            app:layout_box="all" />
+
+    </GridLayout>
+
 
 </android.support.wearable.view.BoxInsetLayout>

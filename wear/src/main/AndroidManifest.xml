@@ -23,10 +23,21 @@
             android:theme="@android:style/Theme.DeviceDefault.Light">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service android:name=".GpsService" />
+        <service android:name=".service.WearMessageListener" >
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
+            </intent-filter>
+        </service>
+        <!--<receiver class=".MainActivity"-->
+            <!--android:name=".MainActivity">-->
+            <!--<intent-filter android:priority="100">-->
+                <!--<action android:name="location" />-->
+            <!--</intent-filter>-->
+        <!--</receiver>-->
     </application>
 
 </manifest>

@@ -1,36 +1,28 @@
 package org.mackristof.followme
 
+import android.Manifest.permission.READ_CONTACTS
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.TargetApi
-import android.content.pm.PackageManager
-import android.support.design.widget.Snackbar
-import android.support.v7.app.AppCompatActivity
 import android.app.LoaderManager.LoaderCallbacks
-
+import android.content.Context
 import android.content.CursorLoader
+import android.content.Intent
 import android.content.Loader
+import android.content.pm.PackageManager
 import android.database.Cursor
 import android.net.Uri
 import android.os.AsyncTask
-
 import android.os.Build
 import android.os.Bundle
 import android.provider.ContactsContract
+import android.support.design.widget.Snackbar
+import android.support.v7.app.AppCompatActivity
 import android.text.TextUtils
-import android.view.KeyEvent
 import android.view.View
-import android.view.View.OnClickListener
 import android.view.inputmethod.EditorInfo
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-
-import java.util.ArrayList
-
-import android.Manifest.permission.READ_CONTACTS
+import android.widget.*
+import java.util.*
 
 /**
  * A login screen that offers login via email/password.
@@ -158,7 +150,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             // perform the user login attempt.
             showProgress(true)
             mAuthTask = UserLoginTask(email, password)
-            mAuthTask!!.execute(null as Void)
+            mAuthTask!!.execute(null)
         }
     }
 
@@ -206,7 +198,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         }
     }
 
-    override fun onCreateLoader(i: Int, bundle: Bundle): Loader<Cursor> {
+    override fun onCreateLoader(i: Int, bundle: Bundle?): Loader<Cursor> {
         return CursorLoader(this,
                 // Retrieve data rows for the device user's 'profile' contact.
                 Uri.withAppendedPath(ContactsContract.Profile.CONTENT_URI,
@@ -287,6 +279,9 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
 
             if (success!!) {
                 finish()
+                val i = Intent(applicationContext as Context, MainActivity::class.java)
+                startActivity(i)
+
             } else {
                 mPasswordView!!.error = getString(R.string.error_incorrect_password)
                 mPasswordView!!.requestFocus()

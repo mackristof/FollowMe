@@ -1,0 +1,29 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    provided 'com.google.android.gms:play-services-wearable:8.3.0'
+    provided 'com.google.android.gms:play-services-location:8.3.0'
+    provided 'com.android.support:support-v13:23.1.1'
+}
+buildscript {
+    ext.kotlin_version = '1.0.0-beta-3595'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+repositories {
+    mavenCentral()
+}
+android {
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
+}

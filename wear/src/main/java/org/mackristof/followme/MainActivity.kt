@@ -1,148 +1,123 @@
 package org.mackristof.followme
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.location.Location
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
-import android.support.v4.app.ActivityCompat
+import android.support.v4.content.LocalBroadcastManager
 import android.support.wearable.activity.WearableActivity
 import android.support.wearable.view.BoxInsetLayout
 import android.util.Log
 import android.view.View
+import android.widget.Button
 import android.widget.TextView
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.common.api.ResultCallback
-import com.google.android.gms.common.api.Status
-import com.google.android.gms.location.LocationListener
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.wearable.Wearable
-
+import android.widget.Toast
+import org.mackristof.followme.service.WearMessageListener
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
-class MainActivity : WearableActivity(),
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        LocationListener {
+class MainActivity : WearableActivity(){
 
-
-    private val TAG: String = MainActivity.javaClass.simpleName
     private var mContainerView: BoxInsetLayout? = null
     private var mTextView: TextView? = null
     private var mClockView: TextView? = null
-    private var mGoogleApiClient : GoogleApiClient? = null
+    private var mButtonStart: Button? = null
+    private var mButtonStop: Button? = null
+    private var broadcaster: LocalBroadcastManager? = null
 
-    private val GPS_UPDATE_INTERVAL_MS: Long = 60000
-    private val GPS_FASTEST_INTERVAL_MS: Long = 30000
-    private var curentLocation: Location? = null
+
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        MainActivityInstance = this
         setContentView(R.layout.activity_main)
         setAmbientEnabled()
-        if (hasGPSPermission()) {
-            askGPS()
+
+        val intentMsg = Intent(this, javaClass<WearMessageListener>())
+        if (!stopService(intentMsg)) {
+            startService(intentMsg)
+        }
+
+        if (Utils.hasGPS(this)) {
+            mButtonStart?.visibility = View.VISIBLE
+
         } else {
+            Toast.makeText(this, "device without GPS. try to start on smartphone", Toast.LENGTH_LONG)
+            mButtonStart?.visibility = View.INVISIBLE
             Log.e(TAG, "not enough permission for application with GPS location")
         }
 
         mContainerView = findViewById(R.id.container) as BoxInsetLayout
         mTextView = findViewById(R.id.text) as TextView
         mClockView = findViewById(R.id.clock) as TextView
+        mButtonStart = findViewById(R.id.startButton) as Button
+        mButtonStop = findViewById(R.id.stopButton) as Button
+        mButtonStart!!.setOnClickListener(View.OnClickListener {
+            // start service Location
+            val intentLoc = Intent(this, javaClass<GpsService>())
+            if (!stopService(intentLoc)) {
+                startService(intentLoc)
+            }
+
+
+        })
+
+        mButtonStop!!.setOnClickListener(View.OnClickListener {
+            //TODO start service
+            val intent = Intent(this, javaClass<GpsService>())
+            stopService(intent)
+        })
+
+        broadcaster = LocalBroadcastManager.getInstance(this)
+        broadcaster?.registerReceiver(LocationBroadcastReceiver(), IntentFilter(LOCATION))
+
+
     }
+
+    private class LocationBroadcastReceiver: BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent!!.hasExtra(LOCATION)){
+                MainActivity.getInstance().updateDisplay(intent.getStringExtra(LOCATION))
+            } else {
+                MainActivity.getInstance().updateDisplay(intent.getStringExtra(STATUS))
+            }
+        }
+
+    }
+
+
     override fun onStop(){
         super.onStop()
-        if(mGoogleApiClient!!.isConnected) {
-            mGoogleApiClient!!.disconnect()
-        }
+        //TODO stop service
+
     }
 
     override fun onPause(){
         super.onPause()
+        broadcaster?.unregisterReceiver(LocationBroadcastReceiver())
     }
 
     override fun onResume(){
         super.onResume()
-        if(!mGoogleApiClient!!.isConnected) {
-            mGoogleApiClient!!.connect()
-        }
-    }
-
-    private fun askGPS() {
-        //start connect API
-        mGoogleApiClient = GoogleApiClient.Builder(this)
-                .addApi(LocationServices.API)
-                .addApi(Wearable.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build()
-        mGoogleApiClient?.connect()
-    }
-
-
-    // callback google api client
-    override fun onConnected(bundle: Bundle?) {
-        updateDisplay("connected, wait for location ...")
-
-        if (hasGPSPermission()){
-            val locationRequest = LocationRequest.create()
-                    .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                    .setInterval(GPS_UPDATE_INTERVAL_MS)
-                    .setFastestInterval(GPS_FASTEST_INTERVAL_MS)
-
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest, this)
-                    .setResultCallback(ResultCallback<com.google.android.gms.common.api.Status> { status ->
-                        if (status.status.isSuccess) {
-                            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                                Log.d(TAG, "Successfully requested location updates")
-                            }
-                        } else {
-                            Log.e(TAG,
-                                    "Failed in requesting location updates, " + "status code: " + status.statusCode
-                                            + ", message: " + status.statusMessage)
-                        }
-                    })
-        }
-    }
-
-    private fun hasGPSPermission(): Boolean {
-        return (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-    }
-
-
-    // google client api connection suspended
-    override fun onConnectionSuspended(i: Int) {
-        Log.d(TAG, "onConnectionSuspended(): connection to location client suspended")
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this)
-    }
-
-    // google client api connection failed
-    override fun onConnectionFailed(connectionResult: ConnectionResult?) {
-        Log.e(TAG, "onConnectionFailed(): " + connectionResult?.errorMessage)
-    }
-
-    // location change listener
-    override fun onLocationChanged(location: Location?) {
-        curentLocation = location
-        updateDisplay("location: "+location?.latitude + " , "+ location?.longitude)
-        Log.i(TAG,"location changed: ("+ location?.latitude+" , "+location?.longitude+")")
+        //TODO verify service started
+        broadcaster?.registerReceiver(LocationBroadcastReceiver(), IntentFilter(LOCATION))
     }
 
     override fun onEnterAmbient(ambientDetails: Bundle?) {
         super.onEnterAmbient(ambientDetails)
-        updateDisplay("ambient")
+//        updateDisplay("ambient")
     }
 
     override fun onUpdateAmbient() {
         super.onUpdateAmbient()
-        updateDisplay("update ambient")
+//        updateDisplay("update ambient")
     }
 
     override fun onExitAmbient() {
-        updateDisplay("exitAmbient")
+//        updateDisplay("exitAmbient")
         super.onExitAmbient()
     }
 
@@ -162,7 +137,20 @@ class MainActivity : WearableActivity(),
         }
     }
 
+
+
     companion object {
         private val AMBIENT_DATE_FORMAT = SimpleDateFormat("HH:mm", Locale.US)
+        val LOCATION = "location"
+        val STATUS = "status"
+        val TAG: String = javaClass.simpleName
+        private var MainActivityInstance: MainActivity? = null
+        fun getInstance(): MainActivity {
+            if (MainActivityInstance!=null) {
+                return MainActivityInstance as MainActivity
+            } else {
+                throw IllegalStateException("MainActivity instance is null")
+            }
+        }
     }
 }
