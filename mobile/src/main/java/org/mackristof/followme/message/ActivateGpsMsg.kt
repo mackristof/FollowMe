@@ -10,13 +10,17 @@ import com.google.android.gms.wearable.Wearable
 import org.mackristof.followme.Constants
 import kotlin.concurrent.thread
 
+/**
+ * Created by christophem on 05/01/2016.
+ */
+class ActivateGpsMsg constructor(context: Context, nodeId: String, text: String?, succes: (nodeWearId:String) -> Unit, failure:() -> Unit): Msg, GoogleApiClient.ConnectionCallbacks, MessageApi.MessageListener {
 
-class GpsMsg constructor(context: Context, nodeId: String, text: String?): Msg, GoogleApiClient.ConnectionCallbacks, MessageApi.MessageListener {
-
-    override val path = Constants.COMMAND_IS_GPS
+    override val path = Constants.COMMAND_ACTIVATE_GPS
     override val text: String? = text
     private var mApiClient: GoogleApiClient? = null
     val nodeId = nodeId
+    val succes = succes
+    val failure = failure
 
 
     init {
@@ -32,10 +36,14 @@ class GpsMsg constructor(context: Context, nodeId: String, text: String?): Msg, 
 
     // on receiving msg from wearable device
     override fun onMessageReceived(messageEvent: MessageEvent) {
-        if (messageEvent.path == Constants.COMMAND_IS_GPS) {
-            //TODO if not gps on watch ativate on smartphone
-            Log.i(Constants.TAG,"gps activated on swatch ? "+String(messageEvent.data))
-
+        if (messageEvent.path == Constants.COMMAND_ACTIVATE_GPS) {
+            Log.i(Constants.TAG,"gps locked with "+String(messageEvent.data))
+            if (messageEvent.data.toString()=="true"){
+                succes(messageEvent.sourceNodeId)
+            } else {
+                failure()
+            }
+            mApiClient?.disconnect()
         }
 
     }
@@ -51,6 +59,7 @@ class GpsMsg constructor(context: Context, nodeId: String, text: String?): Msg, 
     }
     fun sendMessage() {
         thread() {
+            Log.i(Constants.TAG, "send ActivateGpsMsg")
             Wearable.MessageApi.sendMessage(mApiClient, nodeId, path, text?.toByteArray()).await();
 
         }

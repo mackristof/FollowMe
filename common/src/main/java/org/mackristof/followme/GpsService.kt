@@ -27,8 +27,19 @@ class GpsService: Service(), GoogleApiClient.ConnectionCallbacks,
     var broadcaster: LocalBroadcastManager? = null
     var currentLocation: Location? = null
 
+    val locationRequest = LocationRequest.create()
+            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+            .setInterval(Constants.GPS_UPDATE_INTERVAL_MS)
+            .setFastestInterval(Constants.GPS_FASTEST_INTERVAL_MS)
+
     override fun onCreate(){
-        Log.i(Constants.TAG,"gpsService created ")
+        Log.i(Constants.TAG,"gpsService created")
+    }
+
+    override fun onDestroy(){
+        Log.i(Constants.TAG,"gpsService stopped ")
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient,this)
+        mGoogleApiClient?.disconnect()
     }
 
     override fun onStartCommand(intent:Intent , flags: Int, startId: Int ):Int {
@@ -41,17 +52,22 @@ class GpsService: Service(), GoogleApiClient.ConnectionCallbacks,
                 .build()
         mGoogleApiClient?.connect()
         broadcaster = LocalBroadcastManager.getInstance(applicationContext)
-        return Service.START_STICKY
+        if (intent.getBooleanExtra(Constants.INTENT_LOCATION_EXTRA_PUBLISH,false)){
+            if (Utils.isRunningOnWatch(this)){
+                //TODO log current loc to data API
+            } else {
+                //TODO start service publish on mobile
+
+            }
+        }
+        return super.onStartCommand(intent, flags, startId)
     }
 
 
     override fun onConnected(p0: Bundle?) {
         broadcaster?.sendBroadcast(Intent(Constants.INTENT_LOCATION).putExtra(Constants.INTENT_LOCATION_STATUS, "connected, wait for location ..."))
         if (Utils.hasGPS(this.applicationContext)) {
-            val locationRequest = LocationRequest.create()
-                    .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                    .setInterval(Constants.GPS_UPDATE_INTERVAL_MS)
-                    .setFastestInterval(Constants.GPS_FASTEST_INTERVAL_MS)
+
 
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest, this)
                     .setResultCallback(ResultCallback<Status> { status ->
@@ -72,8 +88,8 @@ class GpsService: Service(), GoogleApiClient.ConnectionCallbacks,
 
     override fun onLocationChanged(location: Location?) {
         currentLocation = location
-        broadcaster?.sendBroadcast(Intent(Constants.INTENT_LOCATION).putExtra(Constants.INTENT_LOCATION_STATUS, "located").putExtra(Constants.INTENT_LOCATION, "${location?.latitude},${location?.longitude}"))
-        Log.i(Constants.TAG,"location changed: (${location?.latitude}, ${location?.longitude})")
+        broadcaster?.sendBroadcast(Intent(Constants.INTENT_LOCATION).putExtra(Constants.INTENT_LOCATION_STATUS, "located").putExtra(Constants.INTENT_LOCATION, "${location?.latitude},${location?.longitude} / ${location?.altitude} / ${location?.accuracy}"))
+        Log.i(Constants.TAG,"location changed: (${location?.latitude}, ${location?.longitude} / atl : ${location?.altitude}) with acc ${location?.accuracy} on ${location?.provider}")
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -86,7 +102,7 @@ class GpsService: Service(), GoogleApiClient.ConnectionCallbacks,
         broadcaster?.sendBroadcast(Intent(Constants.INTENT_LOCATION).putExtra(Constants.INTENT_LOCATION_STATUS, "gps connection suspended"))
     }
 
-    override fun onConnectionFailed(connectionResult: ConnectionResult?) {
+    override fun onConnectionFailed(connectionResult: ConnectionResult) {
         Log.e(Constants.TAG, "onConnectionFailed(): " + connectionResult?.errorMessage)
         broadcaster?.sendBroadcast(Intent(Constants.INTENT_LOCATION).putExtra(Constants.INTENT_LOCATION_STATUS, "gps connection failed"))
     }

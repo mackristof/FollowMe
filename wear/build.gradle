@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "org.mackristof.followme"
-        minSdkVersion 20
+        minSdkVersion 14
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
@@ -25,16 +25,18 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':common')
     compile 'com.google.android.support:wearable:1.3.0'
     compile 'com.android.support:support-v13:23.1.1'
-    compile 'com.google.android.gms:play-services-wearable:8.3.0'
-    compile 'com.google.android.gms:play-services-location:8.3.0'
+    debugCompile 'com.google.android.gms:play-services:8.4.0'
+    compile 'com.google.android.gms:play-services-wearable:8.4.0'
+    compile 'com.google.android.gms:play-services-location:8.4.0'
+    compile 'com.google.android.gms:play-services-basement:8.4.0'
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 buildscript {
-    ext.kotlin_version = '1.0.0-beta-3595'
+    ext.kotlin_version = '1.0.0'
     repositories {
         mavenCentral()
     }

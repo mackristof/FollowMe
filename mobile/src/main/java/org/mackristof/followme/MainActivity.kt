@@ -1,5 +1,6 @@
 package org.mackristof.followme
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
@@ -11,7 +12,8 @@ import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.wearable.Wearable
-import org.mackristof.followme.message.GpsMsg
+import org.mackristof.followme.message.ActivateGpsMsg
+import org.mackristof.followme.message.AskGpsMsg
 import org.mackristof.followme.message.PingMsg
 
 
@@ -38,22 +40,38 @@ class MainActivity: AppCompatActivity(), ConnectionCallbacks, OnConnectionFailed
     }
 
 
-    private fun attemptStartTracking() {
+    fun attemptStartTracking() {
+        fun connectWearable(){
 
+            fun askGPS(nodeWearId:String) {
+                fun gpsActivatedOnWear(nodeWearId: String){
+                    Log.i(Constants.TAG,"GPS activated on Wear $nodeWearId")
+                }
+
+                fun startLocService(){
+                    val intentLoc = Intent(this, GpsService::class.java)
+                    if (!stopService(intentLoc)) {
+                        startService(intentLoc)
+                    }
+                }
+
+                fun activateWearGPS(nodeWearId: String){
+                    ActivateGpsMsg(applicationContext,nodeWearId,null, ::gpsActivatedOnWear, ::startLocService).sendMessage()
+                }
+
+                AskGpsMsg(applicationContext,nodeWearId,null, ::activateWearGPS, ::startLocService ).sendMessage()
+            }
+            PingMsg(applicationContext,"hello", ::askGPS).sendMessage()
+
+        }
         if (isWearableAPIExist()) {
-            ConnectWearable()
+            connectWearable()
         } else {
-            mStatusText?.text = "wearable node not found : "+nodeWearId
+            mStatusText?.text = "wearable node not found "
         }
     }
 
-    private fun ConnectWearable(){
-        fun activateGPS(nodeWearId:String) {
-            GpsMsg(applicationContext,nodeWearId,null).sendMessage()
-        }
-        PingMsg(applicationContext,"hello", ::activateGPS).sendMessage()
 
-    }
 
 
 

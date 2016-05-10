@@ -1,6 +1,7 @@
 package org.mackristof.followme
 
 import android.Manifest
+import android.app.ActivityManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.LocationManager
@@ -20,6 +21,16 @@ class Utils {
 
         fun isGpsEnabled(context: Context):Boolean{
            return  (context.getSystemService(Context.LOCATION_SERVICE) as LocationManager).isProviderEnabled(LocationManager.GPS_PROVIDER)
+        }
+
+        fun isServiceRunning(context: Context, serviceName: String?): Boolean{
+            val actManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            for (service in actManager.getRunningServices(Int.MAX_VALUE)){
+                if (serviceName.equals(service.service.className)){
+                    return true
+                }
+            }
+            return false
         }
     }
 

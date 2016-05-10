@@ -2,22 +2,23 @@ package org.mackristof.followme.message
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.wearable.MessageApi
 import com.google.android.gms.wearable.MessageEvent
-import com.google.android.gms.wearable.NodeApi
 import com.google.android.gms.wearable.Wearable
 import org.mackristof.followme.Constants
-import org.mackristof.followme.MainActivity
 import kotlin.concurrent.thread
 
 
-class PingMsg constructor(context: Context, text: String?, callback: (nodeWearId:String) -> Unit): Msg, GoogleApiClient.ConnectionCallbacks, MessageApi.MessageListener {
+class AskGpsMsg constructor(context: Context, nodeId: String, text: String?, succes: (nodeWearId:String) -> Unit, failure:() -> Unit): Msg, GoogleApiClient.ConnectionCallbacks, MessageApi.MessageListener {
 
-    override val path = Constants.COMMAND_PING
+    override val path = Constants.COMMAND_IS_GPS
     override val text: String? = text
     private var mApiClient: GoogleApiClient? = null
-    var callback = callback
+    val nodeId = nodeId
+    val succes = succes
+    val failure = failure
 
 
     init {
@@ -33,12 +34,15 @@ class PingMsg constructor(context: Context, text: String?, callback: (nodeWearId
 
     // on receiving msg from wearable device
     override fun onMessageReceived(messageEvent: MessageEvent) {
-        if (messageEvent.path == Constants.COMMAND_PING) {
-            //TODO display wellconnected
-            callback(messageEvent.sourceNodeId)
-//            MainActivity.getInstance().nodeWearId = messageEvent.sourceNodeId
-            MainActivity.getInstance().mStatusText?.text = "wearable connected to "+ messageEvent.sourceNodeId
-        mApiClient?.disconnect()
+        if (messageEvent.path == Constants.COMMAND_IS_GPS) {
+            //TODO if not gps on watch ativate on smartphone
+            Log.i(Constants.TAG,"gps activated on swatch ? "+String(messageEvent.data))
+            if (String(messageEvent.data)=="true"){
+                succes(messageEvent.sourceNodeId)
+            } else {
+                failure()
+            }
+            mApiClient?.disconnect()
         }
 
     }
@@ -54,13 +58,9 @@ class PingMsg constructor(context: Context, text: String?, callback: (nodeWearId
     }
     fun sendMessage() {
         thread() {
-            var nodes: NodeApi.GetConnectedNodesResult = Wearable.NodeApi.getConnectedNodes(mApiClient).await()
+            Log.i(Constants.TAG, "send GpsMsg")
+            Wearable.MessageApi.sendMessage(mApiClient, nodeId, path, text?.toByteArray()).await();
 
-            for (node in nodes.getNodes()) {
-                Wearable.MessageApi.sendMessage(
-                        mApiClient, node.getId(), path, text?.toByteArray()).await();
-
-            }
         }
     }
 }

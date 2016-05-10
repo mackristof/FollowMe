@@ -36,7 +36,7 @@ class MainActivity : WearableActivity(){
         setContentView(R.layout.activity_main)
         setAmbientEnabled()
 
-        val intentMsg = Intent(this, javaClass<WearMessageListener>())
+        val intentMsg = Intent(this, WearMessageListener::class.java)
         if (!stopService(intentMsg)) {
             startService(intentMsg)
         }
@@ -57,7 +57,8 @@ class MainActivity : WearableActivity(){
         mButtonStop = findViewById(R.id.stopButton) as Button
         mButtonStart!!.setOnClickListener(View.OnClickListener {
             // start service Location
-            val intentLoc = Intent(this, javaClass<GpsService>())
+            val intentLoc = Intent(this, GpsService::class.java)
+            intentLoc.putExtra(Constants.INTENT_LOCATION_EXTRA_PUBLISH,true)
             if (!stopService(intentLoc)) {
                 startService(intentLoc)
             }
@@ -67,7 +68,7 @@ class MainActivity : WearableActivity(){
 
         mButtonStop!!.setOnClickListener(View.OnClickListener {
             //TODO start service
-            val intent = Intent(this, javaClass<GpsService>())
+            val intent = Intent(this, GpsService::class.java)
             stopService(intent)
         })
 
@@ -90,6 +91,9 @@ class MainActivity : WearableActivity(){
 
 
     override fun onStop(){
+        val intentLoc = Intent(this, GpsService::class.java)
+        stopService(intentLoc)
+        broadcaster?.unregisterReceiver(LocationBroadcastReceiver())
         super.onStop()
         //TODO stop service
 
@@ -102,8 +106,9 @@ class MainActivity : WearableActivity(){
 
     override fun onResume(){
         super.onResume()
-        //TODO verify service started
-        broadcaster?.registerReceiver(LocationBroadcastReceiver(), IntentFilter(LOCATION))
+        if (Utils.isServiceRunning(this, GpsService::class.java.name)){
+            broadcaster?.registerReceiver(LocationBroadcastReceiver(), IntentFilter(LOCATION))
+        }
     }
 
     override fun onEnterAmbient(ambientDetails: Bundle?) {
@@ -143,7 +148,7 @@ class MainActivity : WearableActivity(){
         private val AMBIENT_DATE_FORMAT = SimpleDateFormat("HH:mm", Locale.US)
         val LOCATION = "location"
         val STATUS = "status"
-        val TAG: String = javaClass.simpleName
+        val TAG: String = MainActivity::class.java.simpleName
         private var MainActivityInstance: MainActivity? = null
         fun getInstance(): MainActivity {
             if (MainActivityInstance!=null) {
