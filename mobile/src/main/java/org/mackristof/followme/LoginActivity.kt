@@ -285,7 +285,10 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                     return false
                 }
                 404 -> return createAccount(mEmail, mPassword)
-                else -> return false
+                else -> {
+                    LoginActivity.getInstance().mEmailView?.error = "impossible to authenticate user : server offline"
+                    return false
+                }
             }
 
         }
