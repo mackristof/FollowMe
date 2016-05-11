@@ -1,5 +1,6 @@
 package org.mackristof.followme
 
+import kotlinx.android.synthetic.main.activity_login.*
 import android.Manifest.permission.READ_CONTACTS
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -43,11 +44,11 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         // Set up the login form.
-        mEmailView = findViewById(R.id.email) as AutoCompleteTextView
+        mEmailView = email as AutoCompleteTextView
         populateAutoComplete()
 
-        mPasswordView = findViewById(R.id.password) as EditText
-        mPasswordView!!.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, keyEvent ->
+        mPasswordView = password as EditText
+        mPasswordView?.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, keyEvent ->
             if (id == R.id.login || id == EditorInfo.IME_NULL) {
                 attemptLogin()
                 return@OnEditorActionListener true
@@ -55,11 +56,11 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             false
         })
 
-        val mEmailSignInButton = findViewById(R.id.email_sign_in_button) as Button
+        val mEmailSignInButton = email_sign_in_button
         mEmailSignInButton.setOnClickListener { attemptLogin() }
 
-        mLoginFormView = findViewById(R.id.login_form)
-        mProgressView = findViewById(R.id.login_progress)
+        mLoginFormView = login_form
+        mProgressView = login_progress
     }
 
     private fun populateAutoComplete() {
@@ -82,11 +83,11 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                     R.string.permission_rationale,
                     Snackbar.LENGTH_INDEFINITE)
                     .setAction(android.R.string.ok) {
-                        requestPermissions(arrayOf<String>(READ_CONTACTS), REQUEST_READ_CONTACTS)
+                        requestPermissions(arrayOf(READ_CONTACTS), REQUEST_READ_CONTACTS)
                     }
             return false
         } else {
-            requestPermissions(arrayOf<String>(READ_CONTACTS), REQUEST_READ_CONTACTS)
+            requestPermissions(arrayOf(READ_CONTACTS), REQUEST_READ_CONTACTS)
         }
         return false
     }
@@ -115,30 +116,30 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         }
 
         // Reset errors.
-        mEmailView!!.error = null
-        mPasswordView!!.error = null
+        mEmailView?.error = null
+        mPasswordView?.error = null
 
         // Store values at the time of the login attempt.
-        val email = mEmailView!!.text.toString()
-        val password = mPasswordView!!.text.toString()
+        val email = mEmailView?.text.toString()
+        val password = mPasswordView?.text.toString()
 
         var cancel = false
         var focusView: View? = null
 
         // Check for a valid password, if the user entered one.
         if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
-            mPasswordView!!.error = getString(R.string.error_invalid_password)
+            mPasswordView?.error = getString(R.string.error_invalid_password)
             focusView = mPasswordView
             cancel = true
         }
 
         // Check for a valid email address.
         if (TextUtils.isEmpty(email)) {
-            mEmailView!!.error = getString(R.string.error_field_required)
+            mEmailView?.error = getString(R.string.error_field_required)
             focusView = mEmailView
             cancel = true
         } else if (!isEmailValid(email)) {
-            mEmailView!!.error = getString(R.string.error_invalid_email)
+            mEmailView?.error = getString(R.string.error_invalid_email)
             focusView = mEmailView
             cancel = true
         }
@@ -146,13 +147,13 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         if (cancel) {
             // There was an error; don't attempt login and focus the first
             // form field with an error.
-            focusView!!.requestFocus()
+            focusView?.requestFocus()
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true)
             mAuthTask = UserLoginTask(email, password)
-            mAuthTask!!.execute(null)
+            mAuthTask?.execute(null)
         }
     }
 
@@ -177,26 +178,26 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
             val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime)
 
-            mLoginFormView!!.visibility = if (show) View.GONE else View.VISIBLE
-            mLoginFormView!!.animate().setDuration(shortAnimTime.toLong()).alpha(
-                    (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
+            mLoginFormView?.visibility = if (show) View.GONE else View.VISIBLE
+            mLoginFormView?.animate()?.setDuration(shortAnimTime.toLong())?.alpha(
+                    (if (show) 0 else 1).toFloat())?.setListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
-                    mLoginFormView!!.visibility = if (show) View.GONE else View.VISIBLE
+                    mLoginFormView?.visibility = if (show) View.GONE else View.VISIBLE
                 }
             })
 
-            mProgressView!!.visibility = if (show) View.VISIBLE else View.GONE
-            mProgressView!!.animate().setDuration(shortAnimTime.toLong()).alpha(
-                    (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
+            mProgressView?.visibility = if (show) View.VISIBLE else View.GONE
+            mProgressView?.animate()?.setDuration(shortAnimTime.toLong())?.alpha(
+                    (if (show) 1 else 0).toFloat())?.setListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
-                    mProgressView!!.visibility = if (show) View.VISIBLE else View.GONE
+                    mProgressView?.visibility = if (show) View.VISIBLE else View.GONE
                 }
             })
         } else {
             // The ViewPropertyAnimator APIs are not available, so simply show
             // and hide the relevant UI components.
-            mProgressView!!.visibility = if (show) View.VISIBLE else View.GONE
-            mLoginFormView!!.visibility = if (show) View.GONE else View.VISIBLE
+            mProgressView?.visibility = if (show) View.VISIBLE else View.GONE
+            mLoginFormView?.visibility = if (show) View.GONE else View.VISIBLE
         }
     }
 
@@ -234,16 +235,16 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         val adapter = ArrayAdapter(this@LoginActivity,
                 android.R.layout.simple_dropdown_item_1line, emailAddressCollection)
 
-        mEmailView!!.setAdapter(adapter)
+        mEmailView?.setAdapter(adapter)
     }
 
 
     private interface ProfileQuery {
         companion object {
-            val PROJECTION = arrayOf<String>(ContactsContract.CommonDataKinds.Email.ADDRESS, ContactsContract.CommonDataKinds.Email.IS_PRIMARY)
+            val PROJECTION = arrayOf(ContactsContract.CommonDataKinds.Email.ADDRESS, ContactsContract.CommonDataKinds.Email.IS_PRIMARY)
 
             val ADDRESS = 0
-            val IS_PRIMARY = 1
+            //val IS_PRIMARY = 1
         }
     }
 
@@ -253,7 +254,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
      */
     inner class UserLoginTask internal constructor(private val mEmail: String, private val mPassword: String) : AsyncTask<Void, Void, Boolean>() {
 
-        override fun doInBackground(vararg params: Void): Boolean? {
+        override fun doInBackground(vararg params: Void): Boolean {
             // TODO: attempt authentication against a network service.
 
             try {
@@ -275,7 +276,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             return true
         }
 
-        override fun onPostExecute(success: Boolean?) {
+        override fun onPostExecute(success: Boolean) {
             mAuthTask = null
             showProgress(false)
 
@@ -285,8 +286,8 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                 startActivity(i)
 
             } else {
-                mPasswordView!!.error = getString(R.string.error_incorrect_password)
-                mPasswordView!!.requestFocus()
+                mPasswordView?.error = getString(R.string.error_incorrect_password)
+                mPasswordView?.requestFocus()
             }
         }
 
@@ -307,7 +308,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
          * A dummy authentication store containing known user names and passwords.
          * TODO: remove after connecting to a real authentication system.
          */
-        private val DUMMY_CREDENTIALS = arrayOf<String>("foo@example.com:hello", "bar@example.com:world")
+        private val DUMMY_CREDENTIALS = arrayOf("foo@example.com:hello", "bar@example.com:world")
     }
 }
 
