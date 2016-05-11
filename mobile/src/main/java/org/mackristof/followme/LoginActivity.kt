@@ -1,6 +1,5 @@
 package org.mackristof.followme
 
-import kotlinx.android.synthetic.main.activity_login.*
 import android.Manifest.permission.READ_CONTACTS
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -20,9 +19,16 @@ import android.provider.ContactsContract
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.text.TextUtils
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.EditText
+import android.widget.TextView
+import com.github.kittinunf.fuel.httpGet
+import com.github.kittinunf.fuel.httpPost
+import kotlinx.android.synthetic.main.activity_login.*
 import java.util.*
 
 /**
@@ -42,6 +48,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        LoginActivityInstance = this
         setContentView(R.layout.activity_login)
         // Set up the login form.
         mEmailView = email as AutoCompleteTextView
@@ -252,31 +259,38 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    inner class UserLoginTask internal constructor(private val mEmail: String, private val mPassword: String) : AsyncTask<Void, Void, Boolean>() {
+    inner class UserLoginTask internal constructor(private val mEmail: String, private val mPassword: String) : AsyncTask<Void, Void, Boolean?>() {
+
+        fun createAccount(mEmail: String, mPassword: String): Boolean{
+            val (request, response, result) = "http://192.168.1.210:8080/auth".httpPost(listOf("login" to mEmail, "password" to mPassword)).response()
+            when (response.httpStatusCode) {
+                200 -> return true
+                else -> {
+                    Log.e(LoginActivity::class.java.simpleName, "error result from account creation request : "+ response.httpStatusCode)
+                    LoginActivity.getInstance().mEmailView?.error = response.httpResponseMessage + " in account creation"
+//                    LoginActivity.getInstance().mEmailView?.requestFocus()
+                    return false
+                }
+            }
+        }
 
         override fun doInBackground(vararg params: Void): Boolean {
             // TODO: attempt authentication against a network service.
-
-            try {
-                // Simulate network access.
-                Thread.sleep(2000)
-            } catch (e: InterruptedException) {
-                return false
-            }
-
-            for (credential in DUMMY_CREDENTIALS) {
-                val pieces = credential.split(":".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
-                if (pieces[0] == mEmail) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1] == mPassword
+            val (request, response, result) = "http://192.168.1.210:8080/auth".httpGet(listOf("login" to mEmail, "password" to mPassword)).response()
+            when (response.httpStatusCode){
+                200 -> return true
+                401 -> {
+                    LoginActivity.getInstance().mPasswordView?.error = getString(R.string.error_incorrect_password)
+//                    LoginActivity.getInstance().mPasswordView?.requestFocus()
+                    return false
                 }
+                404 -> return createAccount(mEmail, mPassword)
+                else -> return false
             }
 
-            // TODO: register the new account here.
-            return true
         }
 
-        override fun onPostExecute(success: Boolean) {
+        override fun onPostExecute(success: Boolean?) {
             mAuthTask = null
             showProgress(false)
 
@@ -285,9 +299,6 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                 val i = Intent(applicationContext as Context, MainActivity::class.java)
                 startActivity(i)
 
-            } else {
-                mPasswordView?.error = getString(R.string.error_incorrect_password)
-                mPasswordView?.requestFocus()
             }
         }
 
@@ -309,6 +320,18 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
          * TODO: remove after connecting to a real authentication system.
          */
         private val DUMMY_CREDENTIALS = arrayOf("foo@example.com:hello", "bar@example.com:world")
+
+
+        private var LoginActivityInstance: LoginActivity? = null
+        fun getInstance(): LoginActivity {
+            if (LoginActivityInstance != null) {
+                return LoginActivityInstance as LoginActivity
+            }
+            else {
+                throw IllegalStateException(LoginActivity::class.java.simpleName + " instance is null")
+            }
+        }
+
     }
 }
 

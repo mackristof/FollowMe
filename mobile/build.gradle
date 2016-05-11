@@ -44,6 +44,7 @@ dependencies {
     compile 'com.google.android.gms:play-services-identity:8.4.0'
     compile 'com.google.android.gms:play-services-gcm:8.4.0'
     compile 'com.google.android.gms:play-services-auth:8.4.0'
+    compile 'com.github.kittinunf.fuel:fuel-android:1.2.1'
 }
 buildscript {
     ext.kotlin_version = '1.0.1-2'
