@@ -19,7 +19,6 @@ import org.mackristof.followme.message.PingMsg
 
 class MainActivity: AppCompatActivity(), ConnectionCallbacks, OnConnectionFailedListener {
 
-
     var mStatusText: TextView? = null
     var nodeWearId: String? = null
     var mGoogleApiClient:GoogleApiClient? = null
@@ -34,11 +33,8 @@ class MainActivity: AppCompatActivity(), ConnectionCallbacks, OnConnectionFailed
         mStatusText = findViewById(R.id.statusText) as TextView
         mGoogleApiClient = googleApiClient()
         mGoogleApiClient?.connect()
-
         mButtonStart.setOnClickListener { attemptStartTracking() }
-
     }
-
 
     fun attemptStartTracking() {
         fun connectWearable(){
@@ -71,10 +67,6 @@ class MainActivity: AppCompatActivity(), ConnectionCallbacks, OnConnectionFailed
         }
     }
 
-
-
-
-
     private fun googleApiClient(): GoogleApiClient? {
         return GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -82,7 +74,6 @@ class MainActivity: AppCompatActivity(), ConnectionCallbacks, OnConnectionFailed
                 .addApiIfAvailable(Wearable.API)
                 .addApi(LocationServices.API).build()
     }
-
 
     override fun onConnectionSuspended(cause: Int) {
         mStatusText?.text = "connection suspended cause: " + cause
@@ -117,6 +108,7 @@ class MainActivity: AppCompatActivity(), ConnectionCallbacks, OnConnectionFailed
     private fun isWearableAPIExist(): Boolean {
         return (mGoogleApiClient!=null && (mGoogleApiClient as GoogleApiClient).hasConnectedApi(Wearable.API))
     }
+
     companion object{
         private var MainActivityInstance: MainActivity? = null
         fun getInstance(): MainActivity {
@@ -127,4 +119,5 @@ class MainActivity: AppCompatActivity(), ConnectionCallbacks, OnConnectionFailed
             }
         }
     }
+
 }
