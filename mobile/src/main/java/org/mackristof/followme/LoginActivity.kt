@@ -78,11 +78,12 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             return true
         }
         if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
-//            Snackbar.make(mEmailView,
-//                    R.string.permission_rationale,
-//                    Snackbar.LENGTH_INDEFINITE).setAction(android.R.string.ok) {
-//                        requestPermissions(arrayOf<String>(READ_CONTACTS), REQUEST_READ_CONTACTS)
-//                    }
+            Snackbar.make(mEmailView as View,
+                    R.string.permission_rationale,
+                    Snackbar.LENGTH_INDEFINITE)
+                    .setAction(android.R.string.ok) {
+                        requestPermissions(arrayOf<String>(READ_CONTACTS), REQUEST_READ_CONTACTS)
+                    }
             return false
         } else {
             requestPermissions(arrayOf<String>(READ_CONTACTS), REQUEST_READ_CONTACTS)
