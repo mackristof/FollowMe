@@ -41,10 +41,12 @@ class LocationPublisherService: Service(), GoogleApiClient.ConnectionCallbacks,
 
     override fun onConnected(p0: Bundle?) {
         throw UnsupportedOperationException()
+        //TODO what can do on this event ??
     }
 
     override fun onConnectionSuspended(p0: Int) {
         throw UnsupportedOperationException()
+        //TODO what can do on this event ??
     }
 
 
