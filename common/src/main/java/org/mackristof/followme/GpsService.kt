@@ -25,7 +25,8 @@ class GpsService: Service(), GoogleApiClient.ConnectionCallbacks,
 
     var mGoogleApiClient: GoogleApiClient? = null
     var broadcaster: LocalBroadcastManager? = null
-    var currentLocation: Location? = null
+    var currentLocation: org.mackristof.followme.Location? = null
+    var geoGrid: GeoGrid?=null
 
     val locationRequest = LocationRequest.create()
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
@@ -80,16 +81,20 @@ class GpsService: Service(), GoogleApiClient.ConnectionCallbacks,
                                     "Failed in requesting location updates, status code: ${status.statusCode}, message: ${status.statusMessage} ")
                         }
                     })
+            geoGrid = GeoGrid(this)
         } else {
             //TODO send message to start gps on other side
 
         }
     }
 
-    override fun onLocationChanged(location: Location?) {
-        currentLocation = location
-        broadcaster?.sendBroadcast(Intent(Constants.INTENT_LOCATION).putExtra(Constants.INTENT_LOCATION_STATUS, "located").putExtra(Constants.INTENT_LOCATION, "${location?.latitude},${location?.longitude} / ${location?.altitude} / ${location?.accuracy}"))
-        Log.i(Constants.TAG,"location changed: (${location?.latitude}, ${location?.longitude} / atl : ${location?.altitude}) with acc ${location?.accuracy} on ${location?.provider}")
+    override fun onLocationChanged(location: android.location.Location) {
+        currentLocation = org.mackristof.followme.Location(location.time, location.latitude, location.longitude, location.altitude, (location.altitude - geoGrid?.GetAltitudeCorrection(location.latitude, location.longitude)!!), location.accuracy)
+
+        broadcaster?.sendBroadcast(Intent(Constants.INTENT_LOCATION).putExtra(Constants.INTENT_LOCATION_STATUS, "located").putExtra(Constants.INTENT_LOCATION, currentLocation))
+        Log.i(Constants.TAG,"location changed: (${location.latitude}, ${location.longitude} / atl : ${location.altitude}) with acc ${location.accuracy} on ${location.provider} ${location.extras}")
+
+
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -106,5 +111,6 @@ class GpsService: Service(), GoogleApiClient.ConnectionCallbacks,
         Log.e(Constants.TAG, "onConnectionFailed(): " + connectionResult?.errorMessage)
         broadcaster?.sendBroadcast(Intent(Constants.INTENT_LOCATION).putExtra(Constants.INTENT_LOCATION_STATUS, "gps connection failed"))
     }
+
 
 }

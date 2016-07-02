@@ -6,7 +6,7 @@ import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.Wearable
 import com.google.android.gms.wearable.WearableListenerService
-import org.mackristof.followme.MainActivity
+import org.mackristof.followme.MainWearActivity
 import org.mackristof.followme.Constants
 import org.mackristof.followme.GpsService
 import org.mackristof.followme.Utils
@@ -16,12 +16,12 @@ class WearMessageListener: WearableListenerService() {
 
     override fun onCreate(){
         super.onCreate()
-        Log.i(MainActivity.TAG,"WearableListenerService started")
+        Log.i(MainWearActivity.TAG,"WearableListenerService started")
     }
 
     override fun onMessageReceived(messageEvent: MessageEvent){
         if (messageEvent.path == Constants.COMMAND_PING) {
-            Log.i(MainActivity.TAG, messageEvent.path + " (" + String(messageEvent.data) + ")")
+            Log.i(MainWearActivity.TAG, messageEvent.path + " (" + String(messageEvent.data) + ")")
             reply(Constants.COMMAND_PING, "pong",messageEvent.sourceNodeId)
         } else if (messageEvent.path == Constants.COMMAND_IS_GPS) {
             reply(Constants.COMMAND_IS_GPS, (Utils.hasGPS(applicationContext) && Utils.isGpsEnabled(applicationContext)).toString(), messageEvent.sourceNodeId)

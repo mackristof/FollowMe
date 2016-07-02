@@ -1,7 +1,11 @@
 package org.mackristof.followme
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
+import android.support.v4.content.LocalBroadcastManager
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.Button
@@ -15,6 +19,7 @@ import com.google.android.gms.wearable.Wearable
 import org.mackristof.followme.message.ActivateGpsMsg
 import org.mackristof.followme.message.AskGpsMsg
 import org.mackristof.followme.message.PingMsg
+import java.text.SimpleDateFormat
 
 
 class MainActivity: AppCompatActivity(), ConnectionCallbacks, OnConnectionFailedListener {
@@ -23,17 +28,23 @@ class MainActivity: AppCompatActivity(), ConnectionCallbacks, OnConnectionFailed
     var nodeWearId: String? = null
     var mGoogleApiClient:GoogleApiClient? = null
     var wearableNodeId: String? = null
+    var broadcaster: LocalBroadcastManager? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         MainActivityInstance = this
         Log.i(Constants.TAG,"mainActivity created")
         setContentView(R.layout.activity_main)
-        val mButtonStart = findViewById(R.id.mButtonStart) as Button
+        val mButtonStartWear = findViewById(R.id.mButtonStartWear) as Button
+        val mButtonStartPhone = findViewById(R.id.mButtonStartPhone) as Button
         mStatusText = findViewById(R.id.statusText) as TextView
         mGoogleApiClient = googleApiClient()
         mGoogleApiClient?.connect()
-        mButtonStart.setOnClickListener { attemptStartTracking() }
+        mButtonStartWear.setOnClickListener { attemptStartTracking() }
+        mButtonStartPhone.setOnClickListener { startLocServiceOnPhone() }
+
+        broadcaster = LocalBroadcastManager.getInstance(this)
+        broadcaster?.registerReceiver(LocationBroadcastReceiver(), IntentFilter(Constants.INTENT_LOCATION))
     }
 
     fun attemptStartTracking() {
@@ -64,8 +75,39 @@ class MainActivity: AppCompatActivity(), ConnectionCallbacks, OnConnectionFailed
             connectWearable()
         } else {
             mStatusText?.text = "wearable node not found "
+            startLocServiceOnPhone()
         }
     }
+
+    fun startLocServiceOnPhone(){
+        val intentLoc = Intent(this, GpsService::class.java)
+        if (!stopService(intentLoc)) {
+            startService(intentLoc)
+        }
+    }
+
+    private class LocationBroadcastReceiver: BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent!!.hasExtra(Constants.INTENT_LOCATION)){
+                val location: Location = intent.getParcelableExtra(Constants.INTENT_LOCATION)
+                val displayedLoc = """
+location : ${SimpleDateFormat("HH:mm:ss").format(location.timestamp)}
+${String.format("%.1f",location?.lat)}, ${String.format("%.1f",location?.lon)}
+atl : ${String.format(".%1f",location?.corAlt)}(${String.format("%.1f",location?.alt)})
+acc ${String.format("%.1f",location?.acc)}
+"""
+                MainActivity.getInstance().updateDisplay(displayedLoc)
+            } else {
+                MainActivity.getInstance().updateDisplay(intent.getStringExtra(Constants.INTENT_LOCATION_STATUS))
+            }
+        }
+
+    }
+
+    private fun updateDisplay(location: String) {
+        mStatusText?.text = location
+    }
+
 
     private fun googleApiClient(): GoogleApiClient? {
         return GoogleApiClient.Builder(this)
@@ -91,16 +133,24 @@ class MainActivity: AppCompatActivity(), ConnectionCallbacks, OnConnectionFailed
     }
 
     override fun onStop(){
-        super.onStop()
+        val intentLoc = Intent(this, GpsService::class.java)
+        stopService(intentLoc)
+        broadcaster?.unregisterReceiver(LocationBroadcastReceiver())
         mGoogleApiClient?.disconnect()
+        super.onStop()
+
     }
 
     override fun onPause(){
+        broadcaster?.unregisterReceiver(LocationBroadcastReceiver())
         super.onPause()
 
     }
 
     override fun onResume(){
+        if (Utils.isServiceRunning(this, GpsService::class.java.name)){
+            broadcaster?.registerReceiver(LocationBroadcastReceiver(), IntentFilter(Constants.INTENT_LOCATION))
+        }
         super.onResume()
 
     }
@@ -108,6 +158,7 @@ class MainActivity: AppCompatActivity(), ConnectionCallbacks, OnConnectionFailed
     private fun isWearableAPIExist(): Boolean {
         return (mGoogleApiClient!=null && (mGoogleApiClient as GoogleApiClient).hasConnectedApi(Wearable.API))
     }
+
 
     companion object{
         private var MainActivityInstance: MainActivity? = null

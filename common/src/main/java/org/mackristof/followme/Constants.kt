@@ -13,8 +13,9 @@ class Constants {
         val INTENT_LOCATION_EXTRA_PUBLISH = "publish"
         val INTENT_LOCATION_STATUS = "status"
         val TAG = javaClass.`package`.name
-        val GPS_UPDATE_INTERVAL_MS: Long = 60000
-        val GPS_FASTEST_INTERVAL_MS: Long = 30000
+        val GPS_UPDATE_INTERVAL_MS: Long = 1000
+        val GPS_FASTEST_INTERVAL_MS: Long = 0
+        val DATA_ITEM_PATH_LOCATION = "/location"
 
 
     }

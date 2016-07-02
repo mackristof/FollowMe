@@ -5,25 +5,41 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.mackristof.followme.MainActivity"
-    android:theme="@style/Theme.Wearable"
+    tools:context="org.mackristof.followme.MainWearActivity"
+    android:theme="@android:style/Theme.Material.Light"
     tools:deviceIds="wear">
     <GridLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/black"
         android:orientation="vertical">
 
-        <Button
-            android:id="@+id/startButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/start_locate_me"/>
 
-        <Button
-            android:id="@+id/stopButton"
-            android:layout_width="match_parent"
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/stop_locate_me" />
+            android:layout_row="0"
+            android:layout_column="2"
+            android:layout_gravity="center">
+
+            <Button
+                android:id="@+id/startButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/start_locate_me" />
+
+            <Button
+                android:id="@+id/stopButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/stop_locate_me" />
+        </LinearLayout>
+        <TextView
+            android:id="@+id/status"
+            android:textColor="@color/white"
+            />
 
 
         <TextView
@@ -32,7 +48,9 @@
             android:layout_height="wrap_content"
             app:layout_box="all"
             android:background="#935b5b"
-            android:layout_gravity="top|end" />
+            android:layout_gravity="top|end"
+            android:layout_row="3"
+            android:layout_column="0" />
 
         <TextView
             android:id="@+id/clock"
@@ -40,7 +58,9 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|start"
             android:textColor="@android:color/white"
-            app:layout_box="all" />
+            app:layout_box="all"
+            android:layout_row="4"
+            android:layout_column="0" />
 
     </GridLayout>
 

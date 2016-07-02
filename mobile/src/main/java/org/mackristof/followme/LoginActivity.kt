@@ -262,7 +262,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
     inner class UserLoginTask internal constructor(private val mEmail: String, private val mPassword: String) : AsyncTask<Void, Void, Boolean?>() {
 
         fun createAccount(mEmail: String, mPassword: String): Boolean{
-            val (request, response, result) = "http://192.168.1.210:8080/auth".httpPost(listOf("login" to mEmail, "password" to mPassword)).response()
+            val (request, response, result) = "http://192.168.1.19:8080/auth".httpPost(listOf("login" to mEmail, "password" to mPassword)).response()
             when (response.httpStatusCode) {
                 200 -> return true
                 else -> {
@@ -276,7 +276,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
 
         override fun doInBackground(vararg params: Void): Boolean {
             // TODO: attempt authentication against a network service.
-            val (request, response, result) = "http://192.168.1.210:8080/auth".httpGet(listOf("login" to mEmail, "password" to mPassword)).response()
+            val (request, response, result) = "http://192.168.1.19:8080/auth".httpGet(listOf("login" to mEmail, "password" to mPassword)).response()
             when (response.httpStatusCode){
                 200 -> return true
                 401 -> {

@@ -31,6 +31,7 @@
                 android:value=".LoginActivity" />
 
         </activity>
+        <service android:name=".GpsService" />
 
     </application>
 
