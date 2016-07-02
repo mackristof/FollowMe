@@ -2,7 +2,6 @@ package org.mackristof.followme
 
 import android.app.Service
 import android.content.Intent
-import android.location.Location
 import android.os.Bundle
 import android.os.IBinder
 import android.support.v4.content.LocalBroadcastManager
@@ -114,3 +113,6 @@ class GpsService: Service(), GoogleApiClient.ConnectionCallbacks,
 
 
 }
+
+
+
