@@ -7,9 +7,9 @@ import java.util.*
 /**
  * Created by christophem on 01/07/2016.
  */
-data class Location (val timestamp: Long, val lat: Double, val lon: Double, val alt: Double, val corAlt: Double, val acc: Float): Parcelable {
+data class Location (val timestamp: Long, val lat: Double, val lon: Double, val alt: Double, val corAlt: Double, val acc: Float, val nbSats: Int): Parcelable {
 
-    constructor(source: Parcel): this(source.readLong(),source.readDouble(), source.readDouble(), source.readDouble(), source.readDouble(), source.readFloat())
+    constructor(source: Parcel): this(source.readLong(),source.readDouble(), source.readDouble(), source.readDouble(), source.readDouble(), source.readFloat(), source.readInt())
 
     override fun describeContents(): Int {
         return 0
@@ -22,6 +22,7 @@ data class Location (val timestamp: Long, val lat: Double, val lon: Double, val 
         dest?.writeDouble(this.alt)
         dest?.writeDouble(this.corAlt)
         dest?.writeFloat(this.acc)
+        dest?.writeInt(this.nbSats)
     }
 
     companion object {

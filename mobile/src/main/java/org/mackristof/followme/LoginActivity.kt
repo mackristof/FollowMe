@@ -276,7 +276,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
 
         override fun doInBackground(vararg params: Void): Boolean {
             // TODO: attempt authentication against a network service.
-            val (request, response, result) = "http://192.168.1.19:8080/auth".httpGet(listOf("login" to mEmail, "password" to mPassword)).response()
+            val (request, response, result) = "http://192.168.1.64:8080/auth".httpGet(listOf("login" to mEmail, "password" to mPassword)).response()
             when (response.httpStatusCode){
                 200 -> return true
                 401 -> {
@@ -287,7 +287,8 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                 404 -> return createAccount(mEmail, mPassword)
                 else -> {
                     LoginActivity.getInstance().mEmailView?.error = "impossible to authenticate user : server offline"
-                    return false
+                    //@TODO change this
+                    return true
                 }
             }
 

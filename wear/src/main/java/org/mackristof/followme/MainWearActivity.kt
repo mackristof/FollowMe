@@ -90,6 +90,7 @@ location : ${SimpleDateFormat("HH:mm:ss").format(location.timestamp)}
 ${String.format("%.1f",location?.lat)}, ${String.format("%.1f",location?.lon)}
 atl : ${String.format(".%1f",location?.corAlt)}(${String.format("%.1f",location?.alt)})
 acc ${String.format("%.1f",location?.acc)}
+nb Sats ${location?.nbSats}
 """
                 MainWearActivity.getInstance().updateDisplay(displayedLoc)
             } else {
