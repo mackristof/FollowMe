@@ -5,7 +5,7 @@ import android.app.ActivityManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.LocationManager
-import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
 
 class Utils {
 
@@ -15,7 +15,7 @@ class Utils {
         }
 
         fun hasGPS(context: Context): Boolean {
-            return (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) &&
+            return (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) &&
                     (context.packageManager.hasSystemFeature(PackageManager.FEATURE_LOCATION_GPS))
         }
 

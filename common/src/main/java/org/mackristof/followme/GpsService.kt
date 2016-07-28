@@ -15,6 +15,10 @@ import com.google.android.gms.common.api.GoogleApiClient
 //import com.google.android.gms.common.api.Status
 import android.location.LocationListener
 import android.location.LocationProvider
+import com.google.android.gms.common.api.ResultCallback
+import com.google.android.gms.common.api.Status
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
 //import com.google.android.gms.location.LocationRequest
 //import com.google.android.gms.location.LocationServices
 import com.google.android.gms.wearable.Wearable
@@ -33,10 +37,7 @@ class GpsService: Service(), GoogleApiClient.ConnectionCallbacks,
     var gpsSatsAvailable: Int = 0
     private var gpsLocationListerner: GpsLocationListener? = null
 
-//    val locationRequest = LocationRequest.create()
-//            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-//            .setInterval(Constants.GPS_UPDATE_INTERVAL_MS)
-//            .setFastestInterval(Constants.GPS_FASTEST_INTERVAL_MS)
+
 
     override fun onCreate(){
         Log.i(Constants.TAG,"gpsService created")
@@ -44,20 +45,33 @@ class GpsService: Service(), GoogleApiClient.ConnectionCallbacks,
 
     override fun onDestroy(){
         Log.i(Constants.TAG,"gpsService stopped ")
-        //LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient,this)
+        if (Utils.isRunningOnWatch(this)) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, gpsLocationListerner)
+        } else {
+            mlocManager?.removeUpdates(gpsLocationListerner)
+        }
         mGoogleApiClient?.disconnect()
     }
 
     override fun onStartCommand(intent:Intent , flags: Int, startId: Int ):Int {
         Log.i(Constants.TAG,"gpsService started ")
 
-        if (Utils.hasGPS(this.applicationContext)) {
-
+        if ( Utils.hasGPS(this.applicationContext) && Utils.isGpsEnabled(this.applicationContext) ) {
             geoGrid = GeoGrid(this)
             gpsLocationListerner = GpsLocationListener()
-            mlocManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            mlocManager?.addGpsStatusListener(gpsLocationListerner)
-            mlocManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0f, gpsLocationListerner)
+            if (Utils.isRunningOnWatch(this)){
+                mGoogleApiClient = GoogleApiClient.Builder(applicationContext)
+                        .addApiIfAvailable(LocationServices.API)
+                        .addApiIfAvailable(Wearable.API)
+                        .addConnectionCallbacks(this)
+                        .addOnConnectionFailedListener(this)
+                        .build()
+                mGoogleApiClient?.connect()
+            } else {
+                mlocManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                mlocManager?.addGpsStatusListener(gpsLocationListerner)
+                mlocManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0f, gpsLocationListerner)
+            }
         } else {
             //TODO send message to start gps on other side
 
@@ -84,9 +98,35 @@ class GpsService: Service(), GoogleApiClient.ConnectionCallbacks,
 
     override fun onConnected(p0: Bundle?) {
         broadcaster?.sendBroadcast(Intent(Constants.INTENT_LOCATION).putExtra(Constants.INTENT_LOCATION_STATUS, "connected, wait for location ..."))
+        if (Utils.isRunningOnWatch(this)) {
+            val locationRequest = LocationRequest.create()
+                    .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                    .setInterval(Constants.GPS_UPDATE_INTERVAL_MS)
+                    .setFastestInterval(Constants.GPS_FASTEST_INTERVAL_MS)
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest, gpsLocationListerner)
+                    .setResultCallback(ResultCallback<Status> { status ->
+                        if (status.status.isSuccess) {
+                            if (Log.isLoggable(Constants.TAG, Log.DEBUG)) {
+                                Log.d(Constants.TAG, "Successfully requested location updates")
+                            }
+                        } else {
+                            Log.e(Constants.TAG,
+                                    "Failed in requesting location updates, status code: ${status.statusCode}, message: ${status.statusMessage} ")
+                        }
+                    })
+
+//            mlocManager = applicationContext.getSystemService(LOCATION_SERVICE) as LocationManager
+//            mlocManager?.addGpsStatusListener(gpsLocationListerner);
+
+        }
 
     }
-    private inner class GpsLocationListener: LocationListener, GpsStatus.Listener {
+
+
+
+
+
+    private inner class GpsLocationListener: LocationListener, GpsStatus.Listener, com.google.android.gms.location.LocationListener {
 
         override fun onLocationChanged(location: android.location.Location) {
 
