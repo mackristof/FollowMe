@@ -6,63 +6,33 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="org.mackristof.followme.MainWearActivity"
-    android:theme="@android:style/Theme.Material.Light"
+    android:theme="@android:style/Theme.Material"
     tools:deviceIds="wear">
-    <GridLayout
+
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/black"
-        android:orientation="vertical">
+        android:padding="5dp"
+        app:layout_box="all"
+        android:background="@color/black">
 
+        <android.support.wearable.view.GridViewPager
+            android:id="@+id/pager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:keepScreenOn="true" />
 
-
-        <LinearLayout
-            android:orientation="horizontal"
+        <android.support.wearable.view.DotsPageIndicator
+            android:id="@+id/page_indicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_row="0"
-            android:layout_column="2"
-            android:layout_gravity="center">
-
-            <Button
-                android:id="@+id/startButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/start_locate_me" />
-
-            <Button
-                android:id="@+id/stopButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/stop_locate_me" />
-        </LinearLayout>
-        <TextView
-            android:id="@+id/status"
-            android:textColor="@color/white"
-            />
+            android:layout_gravity="center_horizontal|bottom">
+        </android.support.wearable.view.DotsPageIndicator>
 
 
-        <TextView
-            android:id="@+id/text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_box="all"
-            android:background="#935b5b"
-            android:layout_gravity="top|end"
-            android:layout_row="3"
-            android:layout_column="0" />
 
-        <TextView
-            android:id="@+id/clock"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|start"
-            android:textColor="@android:color/white"
-            app:layout_box="all"
-            android:layout_row="4"
-            android:layout_column="0" />
 
-    </GridLayout>
+    </FrameLayout>
 
 
 </android.support.wearable.view.BoxInsetLayout>

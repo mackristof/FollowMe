@@ -51,7 +51,6 @@ class LocationPublisherService: Service(), GoogleApiClient.ConnectionCallbacks,
 
 
     override fun onConnected(p0: Bundle?) {
-        throw UnsupportedOperationException()
         broadcaster = LocalBroadcastManager.getInstance(this)
         broadcaster?.registerReceiver(LocationBroadcastReceiver(), IntentFilter(Constants.INTENT_LOCATION))
     }

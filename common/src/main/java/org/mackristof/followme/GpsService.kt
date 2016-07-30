@@ -45,12 +45,13 @@ class GpsService: Service(), GoogleApiClient.ConnectionCallbacks,
 
     override fun onDestroy(){
         Log.i(Constants.TAG,"gpsService stopped ")
-        if (Utils.isRunningOnWatch(this)) {
+        if (Utils.isRunningOnWatch(this) &&  mGoogleApiClient != null && (mGoogleApiClient as GoogleApiClient).isConnected ){
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, gpsLocationListerner)
+            (mGoogleApiClient as GoogleApiClient).disconnect()
         } else {
             mlocManager?.removeUpdates(gpsLocationListerner)
         }
-        mGoogleApiClient?.disconnect()
+
     }
 
     override fun onStartCommand(intent:Intent , flags: Int, startId: Int ):Int {
@@ -130,13 +131,14 @@ class GpsService: Service(), GoogleApiClient.ConnectionCallbacks,
 
         override fun onLocationChanged(location: android.location.Location) {
 
-            currentLocation = org.mackristof.followme.Location(location.time,
+            val currentLocation = org.mackristof.followme.Location(location.time,
                     location.latitude,
                     location.longitude,
-                    location.altitude,
-                    (location.altitude - geoGrid?.GetAltitudeCorrection(location.latitude, location.longitude)!!),
+                    if (location.hasAltitude() ) location.altitude else Double.NaN,
+                    if (location.hasAltitude() ) (location.altitude - geoGrid?.GetAltitudeCorrection(location.latitude, location.longitude)!!) else Double.NaN,
                     location.accuracy,
                     gpsSatsAvailable)
+
 
 
             broadcaster?.sendBroadcast(Intent(Constants.INTENT_LOCATION).putExtra(Constants.INTENT_LOCATION_STATUS, "located").putExtra(Constants.INTENT_LOCATION, currentLocation))
@@ -146,12 +148,12 @@ class GpsService: Service(), GoogleApiClient.ConnectionCallbacks,
         }
 
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
-            when (status) {
-                LocationProvider.OUT_OF_SERVICE -> broadcaster?.sendBroadcast(Intent(Constants.INTENT_LOCATION).putExtra(Constants.INTENT_LOCATION_STATUS, "GPS Out of Service"))
-                LocationProvider.TEMPORARILY_UNAVAILABLE -> broadcaster?.sendBroadcast(Intent(Constants.INTENT_LOCATION).putExtra(Constants.INTENT_LOCATION_STATUS, "GPS Temporarily Unavailable"))
-                LocationProvider.AVAILABLE -> {
-                }
-            }
+//            when (status) {
+//                LocationProvider.OUT_OF_SERVICE -> broadcaster?.sendBroadcast(Intent(Constants.INTENT_LOCATION).putExtra(Constants.INTENT_LOCATION_STATUS, "GPS Out of Service"))
+//                LocationProvider.TEMPORARILY_UNAVAILABLE -> broadcaster?.sendBroadcast(Intent(Constants.INTENT_LOCATION).putExtra(Constants.INTENT_LOCATION_STATUS, "GPS Temporarily Unavailable"))
+//                LocationProvider.AVAILABLE -> {
+//                }
+//            }
         }
 
         override fun onGpsStatusChanged(event: Int) {
