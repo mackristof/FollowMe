@@ -18,6 +18,7 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import org.mackristof.followme.fragment.DisplayFragment
+import org.mackristof.followme.fragment.DisplayMapFragment
 import org.mackristof.followme.fragment.StartFragment
 import org.mackristof.followme.service.WearMessageListener
 import java.text.SimpleDateFormat
@@ -38,7 +39,7 @@ class MainWearActivity : WearableActivity(){
         var mCtx: Context? = null
         constructor(ctx : Context, fm: FragmentManager) : super(fm) {
             mCtx = ctx
-            val firstRow = Row(StartFragment(), DisplayFragment())
+            val firstRow = Row(StartFragment(), DisplayFragment(), DisplayMapFragment())
             mRows.add(firstRow)
             mRows.add(Row(cardFragment(R.string.card_start_title, R.string.card_start_text)))
         }

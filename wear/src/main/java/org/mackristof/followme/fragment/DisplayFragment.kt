@@ -5,6 +5,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.content.LocalBroadcastManager
 import android.view.LayoutInflater
@@ -87,7 +89,10 @@ nb Sats ${location.nbSats}
         if (location !=null) {
             mTimeView!!.text = SimpleDateFormat("HH:mm:ss").format(location?.timestamp)
             if (location != null) {
-                mAccProgressBar?.progress = if (location.acc < 10) 100 else if (location.acc < 50) 50 else 0
+                mAccProgressBar?.progress = if (location.acc < 10) 100 else if (location.acc < 50) 50 else 20
+                val color = if (location.acc < 10) Color.GREEN else if (location.acc < 50) Color.YELLOW else Color.RED
+                mAccProgressBar?.setProgressTintList(ColorStateList.valueOf(color))
+
             }
         }
         mStatusView?.text = status
