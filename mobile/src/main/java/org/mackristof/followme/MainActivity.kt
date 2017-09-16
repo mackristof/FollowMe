@@ -19,6 +19,7 @@ import com.google.android.gms.wearable.Wearable
 import org.mackristof.followme.message.ActivateGpsMsg
 import org.mackristof.followme.message.AskGpsMsg
 import org.mackristof.followme.message.PingMsg
+import org.mackristof.followme.service.MobileWearableListenerService
 import java.text.SimpleDateFormat
 
 
@@ -48,6 +49,7 @@ class MainActivity: AppCompatActivity(), ConnectionCallbacks, OnConnectionFailed
     }
 
     fun attemptStartTracking() {
+
         fun connectWearable(){
 
             fun askGPS(nodeWearId:String) {
@@ -73,9 +75,17 @@ class MainActivity: AppCompatActivity(), ConnectionCallbacks, OnConnectionFailed
         }
         if (isWearableAPIExist()) {
             connectWearable()
+            listenWearLocation()
         } else {
             mStatusText?.text = "wearable node not found "
             startLocServiceOnPhone()
+        }
+    }
+
+    fun listenWearLocation(){
+        val intentMsg = Intent(this, MobileWearableListenerService::class.java)
+        if (!Utils.isServiceRunning(applicationContext, MobileWearableListenerService::class.java.name)) {
+            startService(intentMsg)
         }
     }
 

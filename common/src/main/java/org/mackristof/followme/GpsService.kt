@@ -54,9 +54,9 @@ class GpsService: Service(), GoogleApiClient.ConnectionCallbacks,
 
     }
 
-    override fun onStartCommand(intent:Intent , flags: Int, startId: Int ):Int {
+    override fun onStartCommand(intent: Intent? , flags: Int, startId: Int ):Int {
         Log.i(Constants.TAG,"gpsService started ")
-
+        broadcaster = LocalBroadcastManager.getInstance(applicationContext)
         if ( Utils.hasGPS(this.applicationContext) && Utils.isGpsEnabled(this.applicationContext) ) {
             geoGrid = GeoGrid(this)
             gpsLocationListerner = GpsLocationListener()
@@ -75,22 +75,8 @@ class GpsService: Service(), GoogleApiClient.ConnectionCallbacks,
             }
         } else {
             //TODO send message to start gps on other side
-
         }
 
-//        mGoogleApiClient = GoogleApiClient.Builder(applicationContext)
-//                .addApiIfAvailable(Wearable.API)
-//                .build()
-//        mGoogleApiClient?.connect()
-        broadcaster = LocalBroadcastManager.getInstance(applicationContext)
-        if (intent.getBooleanExtra(Constants.INTENT_LOCATION_EXTRA_PUBLISH,false)){
-            if (Utils.isRunningOnWatch(this)){
-                //TODO log current loc to data API
-            } else {
-                //TODO start service publish on mobile
-
-            }
-        }
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -115,9 +101,6 @@ class GpsService: Service(), GoogleApiClient.ConnectionCallbacks,
                                     "Failed in requesting location updates, status code: ${status.statusCode}, message: ${status.statusMessage} ")
                         }
                     })
-
-//            mlocManager = applicationContext.getSystemService(LOCATION_SERVICE) as LocationManager
-//            mlocManager?.addGpsStatusListener(gpsLocationListerner);
 
         }
 

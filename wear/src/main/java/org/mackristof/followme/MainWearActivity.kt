@@ -38,7 +38,7 @@ class MainWearActivity : WearableActivity(){
         }
 
         override fun getFragment(row: Int, col: Int): Fragment? {
-             return mRows[row]?.getColumn(col)
+             return mRows[row].getColumn(col)
         }
 
         fun cardFragment(titleRes: Int, textRes: Int): Fragment{
@@ -82,7 +82,7 @@ class MainWearActivity : WearableActivity(){
         dotsPageIndicator.setPager(pager)
 
         val intentMsg = Intent(this, WearMessageListener::class.java)
-        if (!stopService(intentMsg)) {
+        if (!Utils.isServiceRunning(applicationContext, WearMessageListener::class.java.name)) {
             startService(intentMsg)
         }
 

@@ -1,20 +1,17 @@
 package org.mackristof.followme.fragment
 
 import android.app.Fragment
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
-import android.support.v4.content.LocalBroadcastManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.TextView
-import org.mackristof.followme.*
-import java.text.SimpleDateFormat
-import java.util.*
+import org.mackristof.followme.Constants
+import org.mackristof.followme.GpsService
+import org.mackristof.followme.R
+import org.mackristof.followme.Utils
+import org.mackristof.followme.service.LocationPublisherService
 
 /**
  * Created by christophem on 29/07/2016.
@@ -38,12 +35,20 @@ class StartFragment : Fragment() {
             intentLoc.putExtra(Constants.INTENT_LOCATION_EXTRA_PUBLISH,true)
             if (!Utils.isServiceRunning(context,GpsService::class.java.name)) {
                 activity.startService(intentLoc)
+                if (!Utils.isServiceRunning(context, LocationPublisherService::class.java.name)) {
+                    val intentMsg = Intent(context, LocationPublisherService::class.java)
+                    activity.startService(intentMsg)
+                }
             }
         })
 
         mButtonStop?.setOnClickListener(View.OnClickListener {
             val intent = Intent(this.context, GpsService::class.java)
             activity.stopService(intent)
+            if (Utils.isServiceRunning(context, LocationPublisherService::class.java.name)) {
+                val intentMsg = Intent(context, LocationPublisherService::class.java)
+                activity.stopService(intentMsg)
+            }
         })
 
 

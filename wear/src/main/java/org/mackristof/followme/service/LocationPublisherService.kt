@@ -5,7 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.location.Location
+import org.mackristof.followme.Location
 import android.os.Bundle
 import android.os.IBinder
 import android.support.v4.content.LocalBroadcastManager
@@ -13,10 +13,9 @@ import android.util.Log
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.wearable.PutDataMapRequest
-import com.google.android.gms.wearable.PutDataRequest
 import com.google.android.gms.wearable.Wearable
 import org.mackristof.followme.Constants
-import org.mackristof.followme.MainWearActivity
+import org.mackristof.followme.Utils
 
 /**
  * Created by christophem on 14/01/2016.
@@ -35,6 +34,11 @@ class LocationPublisherService: Service(), GoogleApiClient.ConnectionCallbacks,
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
+    }
+
+    override fun onCreate() {
+        LocationPublisherServiceInstance = this
+        super.onCreate()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -67,24 +71,29 @@ class LocationPublisherService: Service(), GoogleApiClient.ConnectionCallbacks,
     private class LocationBroadcastReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent!!.hasExtra(Constants.INTENT_LOCATION)){
-                LocationPublisherService.getInstance().putLocationToDataApi(intent.getParcelableExtra(Constants.INTENT_LOCATION))
+                if (Utils.isRunningOnWatch(context!!)) {
+                    LocationPublisherService.getInstance().putLocationToDataApi(intent.getParcelableExtra(Constants.INTENT_LOCATION))
+                } else {
+                    LocationPublisherService.getInstance().publishCurrentLocation(intent.getParcelableExtra(Constants.INTENT_LOCATION))
+                }
             }
         }
 
     }
 
 
-    fun storeLocationtoDb( location: Location){
-
+    fun publishCurrentLocation(location: Location){
+        Log.i(Constants.TAG, "go to publish last location at "+ location.timestamp)
     }
 
 
     fun putLocationToDataApi( location: Location) {
         val putDataMapReq = PutDataMapRequest.create(Constants.DATA_ITEM_PATH_LOCATION)
-        putDataMapReq.dataMap.putDouble("lat",location.latitude);
-        putDataMapReq.dataMap.putDouble("lon",location.longitude);
-        putDataMapReq.dataMap.putDouble("alt",location.altitude);
-        putDataMapReq.dataMap.putFloat("acc",location.accuracy);
+        putDataMapReq.dataMap.putDouble("lat", location.lat)
+        putDataMapReq.dataMap.putLong("time", location.timestamp)
+        putDataMapReq.dataMap.putDouble("lon", location.lon)
+        putDataMapReq.dataMap.putDouble("alt", location.alt)
+        putDataMapReq.dataMap.putFloat("acc", location.acc)
         val putDataRequest = putDataMapReq.asPutDataRequest()
         Wearable.DataApi.putDataItem(mGoogleApiClient, putDataRequest)
     }
