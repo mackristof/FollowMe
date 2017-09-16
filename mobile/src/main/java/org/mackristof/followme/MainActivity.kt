@@ -134,10 +134,10 @@ nb Sats ${location?.nbSats}
     }
 
     override fun onStop(){
-        val intentLoc = Intent(this, GpsService::class.java)
-        stopService(intentLoc)
-        broadcaster?.unregisterReceiver(LocationBroadcastReceiver())
-        mGoogleApiClient?.disconnect()
+//        val intentLoc = Intent(this, GpsService::class.java)
+//        stopService(intentLoc)
+//        broadcaster?.unregisterReceiver(LocationBroadcastReceiver())
+//        mGoogleApiClient?.disconnect()
         super.onStop()
 
     }

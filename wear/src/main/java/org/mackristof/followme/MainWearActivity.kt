@@ -1,24 +1,18 @@
 package org.mackristof.followme
 
+import android.app.Activity
 import android.app.Fragment
 import android.app.FragmentManager
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
-import android.support.v4.content.LocalBroadcastManager
 import android.support.wearable.activity.WearableActivity
-import android.support.wearable.view.*
+import android.support.wearable.view.CardFragment
+import android.support.wearable.view.DotsPageIndicator
+import android.support.wearable.view.FragmentGridPagerAdapter
+import android.support.wearable.view.GridViewPager
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
 import org.mackristof.followme.fragment.DisplayFragment
-import org.mackristof.followme.fragment.DisplayMapFragment
 import org.mackristof.followme.fragment.StartFragment
 import org.mackristof.followme.service.WearMessageListener
 import java.text.SimpleDateFormat
@@ -26,20 +20,12 @@ import java.util.*
 
 class MainWearActivity : WearableActivity(){
 
-
-
-
-
-
-
-
-
     private inner class SampleGridPagerAdapter : FragmentGridPagerAdapter {
         val mRows: ArrayList<SampleGridPagerAdapter.Row> = ArrayList<SampleGridPagerAdapter.Row>()
         var mCtx: Context? = null
         constructor(ctx : Context, fm: FragmentManager) : super(fm) {
             mCtx = ctx
-            val firstRow = Row(StartFragment(), DisplayFragment(), DisplayMapFragment())
+            val firstRow = Row(StartFragment(), DisplayFragment()) //, DisplayMapFragment())
             mRows.add(firstRow)
             mRows.add(Row(cardFragment(R.string.card_start_title, R.string.card_start_text)))
         }
@@ -85,9 +71,6 @@ class MainWearActivity : WearableActivity(){
 
     }
 
-
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         MainWearActivityInstance = this
@@ -103,50 +86,34 @@ class MainWearActivity : WearableActivity(){
             startService(intentMsg)
         }
 
-
-
-
-
-
     }
 
+    override fun onPause() {
 
-
+        super.onPause()
+    }
 
     override fun onStop(){
-        val intentLoc = Intent(this, GpsService::class.java)
-        stopService(intentLoc)
-
+        if (Utils.isServiceRunning(this.applicationContext ,GpsService::class.java.name)){
+            Log.i(Constants.TAG,"app runnning so wont stop recording")
+            Utils.generateNotification(this.applicationContext, R.drawable.ic_place_24dp, this::javaClass.get() as Class<Activity>, "clic to restore followMe" )
+        }
         super.onStop()
-        //TODO stop service
-
     }
 
-
-
-    override fun onEnterAmbient(ambientDetails: Bundle?) {
-        super.onEnterAmbient(ambientDetails)
-//        updateDisplay("ambient")
+    override fun onDestroy() {
+        super.onDestroy()
     }
 
-    override fun onUpdateAmbient() {
-        super.onUpdateAmbient()
-//        updateDisplay("update ambient")
+    override fun onResume() {
+        super.onResume()
     }
-
-    override fun onExitAmbient() {
-//        updateDisplay("exitAmbient")
-        super.onExitAmbient()
-    }
-
 
 
 
 
     companion object {
         private val AMBIENT_DATE_FORMAT = SimpleDateFormat("HH:mm", Locale.US)
-        //val LOCATION = "location"
-        //val STATUS = "status"
         val TAG: String = MainWearActivity::class.java.simpleName
         private var MainWearActivityInstance: MainWearActivity? = null
         fun getInstance(): MainWearActivity {
@@ -156,5 +123,6 @@ class MainWearActivity : WearableActivity(){
                 throw IllegalStateException("MainWearActivity instance is null")
             }
         }
+
     }
 }

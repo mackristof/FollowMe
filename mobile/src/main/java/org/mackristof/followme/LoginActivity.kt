@@ -46,6 +46,11 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
     private var mProgressView: View? = null
     private var mLoginFormView: View? = null
 
+
+    override fun onPause() {
+        super.onPause()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         LoginActivityInstance = this

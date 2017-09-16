@@ -36,7 +36,7 @@ class StartFragment : Fragment() {
             // start service Location
             val intentLoc = Intent(this.context, GpsService::class.java)
             intentLoc.putExtra(Constants.INTENT_LOCATION_EXTRA_PUBLISH,true)
-            if (!activity.stopService(intentLoc)) {
+            if (!Utils.isServiceRunning(context,GpsService::class.java.name)) {
                 activity.startService(intentLoc)
             }
         })
